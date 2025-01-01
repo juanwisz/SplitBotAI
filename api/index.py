@@ -1,37 +1,57 @@
-# api/index.py
-from http.server import BaseHTTPRequestHandler
 import json
 from src.calculator.gpt_math_calculator import GroupExpenseCalculator
 
+# Initialize the calculator
 calculator = GroupExpenseCalculator()
 
-class handler(BaseHTTPRequestHandler):
-    def do_POST(self):
-        content_length = int(self.headers['Content-Length'])
-        request_body = self.rfile.read(content_length)
+# Vercel expects a `handler` function as the entry point
+def handler(request):
+    # Parse the request body
+    try:
+        content_length = int(request.headers.get("content-length", 0))
+        request_body = request.body.read(content_length)
         data = json.loads(request_body)
-        
-        if self.path == '/api/add-transactions':
-            try:
-                calculator.add_transactions(data['transactions'])
-                response = {'status': 'success', 'message': 'Transactions added'}
-                self.send_response(200)
-            except Exception as e:
-                response = {'status': 'error', 'message': str(e)}
-                self.send_response(400)
-                
-        elif self.path == '/api/calculate':
-            try:
-                balances = calculator.calculate_balances()
-                response = {'status': 'success', 'balances': balances}
-                self.send_response(200)
-            except Exception as e:
-                response = {'status': 'error', 'message': str(e)}
-                self.send_response(400)
-        else:
-            response = {'status': 'error', 'message': 'Invalid endpoint'}
-            self.send_response(404)
-            
-        self.send_header('Content-type', 'application/json')
-        self.end_headers()
-        self.wfile.write(json.dumps(response).encode())
+    except Exception:
+        return {
+            "statusCode": 400,
+            "body": json.dumps({"status": "error", "message": "Invalid JSON body"})
+        }
+
+    # Route based on the path
+    if request.path == "/api/add-transactions":
+        try:
+            # Add transactions to the calculator
+            calculator.add_transactions(data["transactions"])
+            response = {"status": "success", "message": "Transactions added"}
+            return {
+                "statusCode": 200,
+                "body": json.dumps(response)
+            }
+        except Exception as e:
+            return {
+                "statusCode": 400,
+                "body": json.dumps({"status": "error", "message": str(e)})
+            }
+
+    elif request.path == "/api/calculate":
+        try:
+            # Calculate balances
+            balances = calculator.calculate_balances()
+            response = {"status": "success", "balances": balances}
+            return {
+                "statusCode": 200,
+                "body": json.dumps(response)
+            }
+        except Exception as e:
+            return {
+                "statusCode": 400,
+                "body": json.dumps({"status": "error", "message": str(e)})
+            }
+
+    else:
+        # Return 404 for invalid endpoints
+        return {
+            "statusCode": 404,
+            "body": json.dumps({"status": "error", "message": "Invalid endpoint"})
+        }
+
