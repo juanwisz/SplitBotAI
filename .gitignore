@@ -1,0 +1,36 @@
+# Ignore virtual environment directories
+.nenv/
+.venv/
+
+# Ignore Node.js related files
+node_modules/
+package-lock.json
+package.json
+.next/
+next.config.js
+
+# Ignore Python bytecode files
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignore IDE files and other system-specific files
+.vscode/
+*.swp
+
+# Ignore Vercel deployment configuration directory
+.vercel/
+.DS_Store
+
+# Ignore logs and temporary files
+*.log
+*.tmp
+
+# Ignore package distribution files
+*.egg-info/
+dist/
+build/
+
+# Ignore environment-specific configuration files
+vercel.json
+
